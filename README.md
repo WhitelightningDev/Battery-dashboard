@@ -18,7 +18,7 @@ The implementation is designed to be honest about imperfect source data:
 
 - Backend: Python, FastAPI, Uvicorn
 - Frontend: TypeScript, React 19, Vite
-- Charting: Highcharts fan chart
+- Charting: D3 SVG fan chart
 - Data source: `backend/take-home-data-v2.json`
 
 ## Prerequisites
@@ -91,13 +91,15 @@ errors and valid responses with no annual bands.
 
 ## Charting library choice
 
-Highcharts was selected for the follow-up fan chart to align with the supplied
-reference implementation and provide mature chart interactions, range-series
-rendering, accessibility support, and tooltips with limited custom chart code.
+The current fan chart is a custom D3-driven SVG implementation. Highcharts and
+SciChart were used as visual references, but D3 was selected for direct control
+over the calendar-year timeline, historical-to-forecast handoff, percentile
+bands, hover pins, legend, and compact dashboard styling without adding a
+commercial chart dependency.
 
 The chart shows:
 
-- Contract year on the X-axis.
+- Calendar year on the X-axis.
 - P&L per MW per year on the Y-axis.
 - `p10`–`p90` as the outer uncertainty band.
 - `p25`–`p75` as the inner uncertainty band.
@@ -105,8 +107,11 @@ The chart shows:
 - `strikePerMwYr` as a dashed reference line.
 - Yearly percentile values and strike in the hover tooltip.
 
-Tradeoff: Highcharts is heavier than the prior custom SVG implementation and
-requires appropriate licensing for commercial production use.
+Tradeoff: D3 gives stronger control over the product-specific chart behavior,
+but requires more custom SVG code than a packaged charting library.
+
+See [`docs/fan-chart-execution.md`](docs/fan-chart-execution.md) for execution
+notes and the reference links used to understand and implement the fan chart.
 
 ## Nearest-cell snapping
 
