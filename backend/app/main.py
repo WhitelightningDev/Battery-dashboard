@@ -4,15 +4,27 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from decimal import Decimal
 from pathlib import Path
-from typing import Annotated, Any
+from time import monotonic
+from typing import Annotated, Any, Literal
+from uuid import uuid4
 
 from fastapi import FastAPI
 from fastapi import HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 #logging for the application 
 logger = logging.getLogger(__name__)
 DATA_FILE = Path(__file__).resolve().parents[1] / "take-home-data.json"
+RUN_QUEUED_SECONDS = 1.0
+RUN_COMPLETE_SECONDS = 2.5
+
+RunStatus = Literal["queued", "running", "complete"]
+
+
+class RunResponse(BaseModel):
+    id: str
+    status: RunStatus
 
 # Loads data from the json file and then validates the data
 def load_dashboard_data(path: Path) -> dict[str, Any]:
@@ -32,6 +44,8 @@ def load_dashboard_data(path: Path) -> dict[str, Any]:
 # This context manager loads the dashboard data when the application starts and handles any errors that may occur during loading.
 @asynccontextmanager
 async def lifespan(application: FastAPI) -> AsyncIterator[None]:
+    application.state.runs = {}
+
     try:
         application.state.dashboard_data = load_dashboard_data(DATA_FILE)
         application.state.dashboard_data_error = None
@@ -64,6 +78,34 @@ app.add_middleware(
 @app.get("/api/health", tags=["system"])
 async def health_check() -> dict[str, str]:
     return {"status": "ok"}
+
+
+def get_run_status(created_at: float) -> RunStatus:
+    elapsed = monotonic() - created_at
+
+    if elapsed < RUN_QUEUED_SECONDS:
+        return "queued"
+    if elapsed < RUN_COMPLETE_SECONDS:
+        return "running"
+
+    return "complete"
+
+
+@app.post("/runs", response_model=RunResponse, status_code=201, tags=["runs"])
+async def create_run(request: Request) -> RunResponse:
+    run_id = str(uuid4())
+    request.app.state.runs[run_id] = monotonic()
+    return RunResponse(id=run_id, status="queued")
+
+
+@app.get("/runs/{run_id}", response_model=RunResponse, tags=["runs"])
+async def get_run(run_id: str, request: Request) -> RunResponse:
+    created_at = request.app.state.runs.get(run_id)
+
+    if created_at is None:
+        raise HTTPException(status_code=404, detail="Run not found.")
+
+    return RunResponse(id=run_id, status=get_run_status(created_at))
 
 # Define a helper function to retrieve the dashboard data from the application state.
 def get_dashboard_data(request: Request) -> dict[str, Any]:

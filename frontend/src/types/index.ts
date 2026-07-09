@@ -2,6 +2,13 @@ export interface HealthResponse {
   status: string;
 }
 
+export type RunStatus = "queued" | "running" | "complete";
+
+export interface RunResponse {
+  id: string;
+  status: RunStatus;
+}
+
 /**
  * The API accepts any non-empty profile name. Keep this as a string until the
  * backend exposes a fixed set of supported profiles.

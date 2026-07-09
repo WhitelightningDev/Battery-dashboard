@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getPnlCurve, getStrikeMatrix, PricingApiError } from "./api";
 import {
   DashboardShell,
   DealTermsSelector,
   HeadlinePrice,
   PnlCurveChart,
+  RunLauncher,
 } from "./components";
 import type {
   DealTerms,
@@ -37,6 +38,9 @@ function App() {
   });
   const curveRequestId = useRef(0);
   const [loadAttempt, setLoadAttempt] = useState(0);
+  const handleRunComplete = useCallback(() => {
+    setLoadAttempt((attempt) => attempt + 1);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -140,6 +144,8 @@ function App() {
 
   return (
     <DashboardShell>
+      <RunLauncher onComplete={handleRunComplete} />
+
       {matrixState.status === "loading" && (
         <section
           className="state-card"

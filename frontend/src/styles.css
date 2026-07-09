@@ -76,6 +76,7 @@ h1 {
 }
 
 .state-card,
+.run-launcher,
 .selector-card,
 .headline-card,
 .chart-card {
@@ -91,6 +92,7 @@ h1 {
 }
 
 .state-card h2,
+.run-launcher h2,
 .selector-card h2 {
   margin-bottom: 6px;
   font-size: 1.125rem;
@@ -102,6 +104,7 @@ h1 {
 }
 
 .state-card p,
+.run-launcher p,
 .selector-card p {
   margin-bottom: 0;
   color: #6a7971;
@@ -138,10 +141,72 @@ h1 {
   background: #1c5e3b;
 }
 
+.run-launcher {
+  justify-content: space-between;
+  margin-top: 40px;
+}
+
+.run-launcher .eyebrow {
+  margin-bottom: 8px;
+}
+
+.run-actions {
+  display: grid;
+  min-width: 180px;
+  gap: 10px;
+  justify-items: end;
+}
+
+.launch-button {
+  min-width: 170px;
+  padding: 10px 16px;
+  border: 1px solid #25734a;
+  border-radius: 9px;
+  color: #fff;
+  background: #25734a;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.launch-button:hover:not(:disabled) {
+  background: #1c5e3b;
+}
+
+.launch-button:disabled {
+  border-color: #aebdb5;
+  color: #536159;
+  background: #e7ece9;
+  cursor: not-allowed;
+}
+
+.launch-button:focus-visible,
 .retry-button:focus-visible,
 .selector-field select:focus-visible {
   outline: 3px solid rgb(37 115 74 / 25%);
   outline-offset: 2px;
+}
+
+.run-status {
+  display: grid;
+  min-height: 20px;
+  color: #607068;
+  font-size: 0.8125rem;
+  text-align: right;
+}
+
+.run-status-queued,
+.run-status-running {
+  color: #6c5310;
+}
+
+.run-status-complete {
+  color: #25734a;
+  font-weight: 700;
+}
+
+.run-status-error {
+  max-width: 320px;
+  color: #a23b2a;
 }
 
 .selector-card {
@@ -388,6 +453,19 @@ h1 {
 
   .selector-grid {
     grid-template-columns: 1fr;
+  }
+
+  .run-launcher {
+    display: grid;
+  }
+
+  .run-actions {
+    width: 100%;
+    justify-items: stretch;
+  }
+
+  .run-status {
+    text-align: left;
   }
 
   .terms-comparison {

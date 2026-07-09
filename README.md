@@ -75,6 +75,8 @@ npm run build
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
 | `GET` | `/api/health` | Returns API health status. |
+| `POST` | `/runs` | Creates an in-memory run in the `queued` state. |
+| `GET` | `/runs/{id}` | Returns the current `queued`, `running`, or `complete` run state. |
 | `GET` | `/strike-matrix` | Returns available deal-term rows and `pricePerMwYr`. |
 | `GET` | `/pnl-curve?term={term}&merchantPct={pct}&cycling={cycling}&profile={profile}` | Returns `asOf`, `strikePerMwYr`, and P&L points for an exact priced cell. |
 
@@ -128,6 +130,9 @@ of being silently replaced. This keeps data-quality failures visible.
 
 - Data is read from a static JSON file rather than a database or pricing
   service.
+- Optional run records are process-local and disappear when the backend
+  restarts; their queued/running/complete lifecycle is simulated by elapsed
+  time.
 - Backend response shapes use the supplied data directly instead of explicit
   Pydantic response models.
 - Runtime validation uses small purpose-built TypeScript helpers rather than a
