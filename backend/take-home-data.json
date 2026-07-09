@@ -1,0 +1,289 @@
+{
+  "asOf": "2026-06-01",
+  "strikeMatrix": [
+    {
+      "term": 10,
+      "merchantPct": 20,
+      "cycling": 1.0,
+      "profile": "flat",
+      "pricePerMwYr": 142548
+    },
+    {
+      "term": 10,
+      "merchantPct": 20,
+      "cycling": 1.5,
+      "profile": "flat",
+      "pricePerMwYr": 151030
+    },
+    {
+      "term": 10,
+      "merchantPct": 40,
+      "cycling": 1.0,
+      "profile": "flat",
+      "pricePerMwYr": 138920
+    },
+    {
+      "term": 10,
+      "merchantPct": 40,
+      "cycling": 1.5,
+      "profile": "flat",
+      "pricePerMwYr": 146880
+    },
+    {
+      "term": 15,
+      "merchantPct": 20,
+      "cycling": 1.0,
+      "profile": "flat",
+      "pricePerMwYr": 145220
+    },
+    {
+      "term": 15,
+      "merchantPct": 20,
+      "cycling": 1.5,
+      "profile": "flat",
+      "pricePerMwYr": 149178
+    },
+    {
+      "term": 15,
+      "merchantPct": 40,
+      "cycling": 1.0,
+      "profile": "flat",
+      "pricePerMwYr": 141200
+    },
+    {
+      "term": 15,
+      "merchantPct": 40,
+      "cycling": 1.5,
+      "profile": "flat",
+      "pricePerMwYr": 147350
+    },
+    {
+      "term": 10,
+      "merchantPct": 20,
+      "cycling": 1.0,
+      "profile": "solar",
+      "pricePerMwYr": 135480
+    },
+    {
+      "term": 10,
+      "merchantPct": 20,
+      "cycling": 1.5,
+      "profile": "solar",
+      "pricePerMwYr": 143250
+    },
+    {
+      "term": 10,
+      "merchantPct": 40,
+      "cycling": 1.0,
+      "profile": "solar",
+      "pricePerMwYr": "138too"
+    },
+    {
+      "term": 10,
+      "merchantPct": 40,
+      "cycling": 1.5,
+      "profile": "solar",
+      "pricePerMwYr": 140820
+    },
+    {
+      "term": 15,
+      "merchantPct": 20,
+      "cycling": 1.0,
+      "profile": "solar",
+      "pricePerMwYr": 139640
+    },
+    {
+      "term": 15,
+      "merchantPct": 20,
+      "cycling": 1.5,
+      "profile": "solar",
+      "pricePerMwYr": 145930
+    },
+    {
+      "term": 15,
+      "merchantPct": 40,
+      "cycling": 1.0,
+      "profile": "solar",
+      "pricePerMwYr": 136900
+    },
+    {
+      "term": 15,
+      "merchantPct": 40,
+      "cycling": 1.5,
+      "profile": "solar",
+      "pricePerMwYr": 143760
+    }
+  ],
+  "pnlCurves": {
+    "10|20|1|flat": {
+      "asOf": "2026-06-01",
+      "strikePerMwYr": 142548,
+      "points": [
+        { "p": 10, "pnlPerMwYr": 92000 },
+        { "p": 25, "pnlPerMwYr": 118500 },
+        { "p": 50, "pnlPerMwYr": 142548 },
+        { "p": 75, "pnlPerMwYr": 165800 },
+        { "p": 90, "pnlPerMwYr": 181200 }
+      ]
+    },
+    "10|20|1.5|flat": {
+      "asOf": "2026-06-01",
+      "strikePerMwYr": 151030,
+      "points": [
+        { "p": 10, "pnlPerMwYr": 98000 },
+        { "p": 25, "pnlPerMwYr": 126500 },
+        { "p": 50, "pnlPerMwYr": 151030 },
+        { "p": 75, "pnlPerMwYr": 173400 },
+        { "p": 90, "pnlPerMwYr": 188000 }
+      ]
+    },
+    "10|40|1|flat": {
+      "asOf": "2026-06-01",
+      "strikePerMwYr": 138920,
+      "points": [
+        { "p": 10, "pnlPerMwYr": 91000 },
+        { "p": 25, "pnlPerMwYr": 114000 },
+        { "p": 50, "pnlPerMwYr": 138920 },
+        { "p": 75, "pnlPerMwYr": 160500 },
+        { "p": 90, "pnlPerMwYr": 176800 }
+      ]
+    },
+    "10|40|1.5|flat": {
+      "asOf": "2026-06-01",
+      "strikePerMwYr": 146880,
+      "points": [
+        { "p": 10, "pnlPerMwYr": 95000 },
+        { "p": 25, "pnlPerMwYr": 120300 },
+        { "p": 50, "pnlPerMwYr": 146880 },
+        { "p": 75, "pnlPerMwYr": 168900 },
+        { "p": 90, "pnlPerMwYr": 184600 }
+      ]
+    },
+    "15|20|1|flat": {
+      "asOf": "2026-06-01",
+      "strikePerMwYr": 145220,
+      "points": [
+        { "p": 10, "pnlPerMwYr": 94000 },
+        { "p": 25, "pnlPerMwYr": 119200 },
+        { "p": 50, "pnlPerMwYr": 145220 },
+        { "p": 75, "pnlPerMwYr": 169800 },
+        { "p": 90, "pnlPerMwYr": 186000 }
+      ]
+    },
+    "15|20|1.5|flat": {
+      "asOf": "2026-06-01",
+      "strikePerMwYr": 149178,
+      "points": [
+        { "p": 10, "pnlPerMwYr": 96000 },
+        { "p": 25, "pnlPerMwYr": 123500 },
+        { "p": 50, "pnlPerMwYr": 149178 },
+        { "p": 75, "pnlPerMwYr": 171800 },
+        { "p": 90, "pnlPerMwYr": 189500 }
+      ]
+    },
+    "15|40|1|flat": {
+      "asOf": "2026-06-01",
+      "strikePerMwYr": 141200,
+      "points": [
+        { "p": 10, "pnlPerMwYr": 93000 },
+        { "p": 25, "pnlPerMwYr": 116400 },
+        { "p": 50, "pnlPerMwYr": 141200 },
+        { "p": 75, "pnlPerMwYr": 163500 },
+        { "p": 90, "pnlPerMwYr": 179900 }
+      ]
+    },
+    "15|40|1.5|flat": {
+      "asOf": "2026-06-01",
+      "strikePerMwYr": 147350,
+      "points": [
+        { "p": 10, "pnlPerMwYr": 95500 },
+        { "p": 25, "pnlPerMwYr": 122000 },
+        { "p": 50, "pnlPerMwYr": 147350 },
+        { "p": 75, "pnlPerMwYr": 170000 },
+        { "p": 90, "pnlPerMwYr": 186500 }
+      ]
+    },
+    "10|20|1|solar": {
+      "asOf": "2026-06-01",
+      "strikePerMwYr": 135480,
+      "points": [
+        { "p": 10, "pnlPerMwYr": 89000 },
+        { "p": 25, "pnlPerMwYr": 111000 },
+        { "p": 50, "pnlPerMwYr": 135480 },
+        { "p": 75, "pnlPerMwYr": 154000 },
+        { "p": 90, "pnlPerMwYr": 168000 }
+      ]
+    },
+    "10|20|1.5|solar": {
+      "asOf": "2026-06-01",
+      "strikePerMwYr": 143250,
+      "points": [
+        { "p": 10, "pnlPerMwYr": 93000 },
+        { "p": 25, "pnlPerMwYr": 118500 },
+        { "p": 50, "pnlPerMwYr": 143250 },
+        { "p": 75, "pnlPerMwYr": 162400 },
+        { "p": 90, "pnlPerMwYr": 177900 }
+      ]
+    },
+    "10|40|1|solar": {
+      "asOf": "2026-06-01",
+      "strikePerMwYr": null,
+      "points": []
+    },
+    "10|40|1.5|solar": {
+      "asOf": "2026-06-01",
+      "strikePerMwYr": 140820,
+      "points": [
+        { "p": 10, "pnlPerMwYr": 91500 },
+        { "p": 25, "pnlPerMwYr": 115800 },
+        { "p": 50, "pnlPerMwYr": 140820 },
+        { "p": 75, "pnlPerMwYr": 160600 },
+        { "p": 90, "pnlPerMwYr": 176000 }
+      ]
+    },
+    "15|20|1|solar": {
+      "asOf": "2026-06-01",
+      "strikePerMwYr": 139640,
+      "points": [
+        { "p": 10, "pnlPerMwYr": 91000 },
+        { "p": 25, "pnlPerMwYr": 114300 },
+        { "p": 50, "pnlPerMwYr": 139640 },
+        { "p": 75, "pnlPerMwYr": 158900 },
+        { "p": 90, "pnlPerMwYr": 173800 }
+      ]
+    },
+    "15|20|1.5|solar": {
+      "asOf": "2026-06-01",
+      "strikePerMwYr": 145930,
+      "points": [
+        { "p": 10, "pnlPerMwYr": 94000 },
+        { "p": 25, "pnlPerMwYr": 120000 },
+        { "p": 50, "pnlPerMwYr": 145930 },
+        { "p": 75, "pnlPerMwYr": 165300 },
+        { "p": 90, "pnlPerMwYr": 181000 }
+      ]
+    },
+    "15|40|1|solar": {
+      "asOf": "2026-06-01",
+      "strikePerMwYr": 136900,
+      "points": [
+        { "p": 10, "pnlPerMwYr": 90000 },
+        { "p": 25, "pnlPerMwYr": 112500 },
+        { "p": 50, "pnlPerMwYr": 136900 },
+        { "p": 75, "pnlPerMwYr": 155800 },
+        { "p": 90, "pnlPerMwYr": 171000 }
+      ]
+    },
+    "15|40|1.5|solar": {
+      "asOf": "2026-06-01",
+      "strikePerMwYr": 143760,
+      "points": [
+        { "p": 10, "pnlPerMwYr": 93000 },
+        { "p": 25, "pnlPerMwYr": 118900 },
+        { "p": 50, "pnlPerMwYr": 143760 },
+        { "p": 75, "pnlPerMwYr": 163800 },
+        { "p": 90, "pnlPerMwYr": 179300 }
+      ]
+    }
+  }
+}
