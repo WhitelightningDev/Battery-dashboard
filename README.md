@@ -1,25 +1,25 @@
 # Battery Revenue Mini-Dashboard
 
-Runnable full-stack skeleton for a battery revenue dashboard. Business rules,
-revenue calculations, persistence, and production infrastructure are
-intentionally out of scope at this stage.
+A small full-stack pricing dashboard for exploring battery revenue deal terms.
+Users select term, merchant percentage, cycling, and profile values; the
+dashboard displays the applicable annual price per MW and a P&L curve across
+P-value percentiles.
 
-## Structure
+The implementation is designed to be honest about imperfect source data:
 
-```text
-.
-├── backend/
-│   ├── app/
-│   │   └── main.py
-│   └── requirements.txt
-└── frontend/
-    ├── src/
-    │   ├── api/
-    │   ├── components/
-    │   ├── types/
-    │   └── utils/
-    └── package.json
-```
+- Numeric API values are validated before use.
+- Malformed prices such as `"138too"` are never rendered as prices.
+- Unpriced combinations snap to a real, nearby priced matrix cell.
+- Requested terms and displayed priced terms remain visible.
+- Loading, missing, empty, malformed, and API-error states are explicit.
+- Stale P&L requests cannot overwrite a newer selection.
+
+## Technology
+
+- Backend: Python, FastAPI, Uvicorn
+- Frontend: TypeScript, React 19, Vite
+- Charting: Recharts
+- Data source: `backend/take-home-data.json`
 
 ## Prerequisites
 
@@ -28,31 +28,86 @@ intentionally out of scope at this stage.
 
 ## Run the backend
 
+From the repository root:
+
 ```bash
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-The API is available at `http://localhost:8000`, with interactive documentation
-at `http://localhost:8000/docs` and a health check at
-`http://localhost:8000/api/health`.
+The API runs at `http://localhost:8000`. FastAPI documentation is available at
+`http://localhost:8000/docs`.
 
-The backend expects its input data at `backend/take-home-data.json` and loads it
-once at startup. Dashboard endpoints:
+The backend loads `backend/take-home-data.json` once at startup. Restart the
+backend after changing that file.
 
-- `GET /strike-matrix`
-- `GET /pnl-curve?term=...&merchantPct=...&cycling=...&profile=...`
+## Run the frontend
 
-## Nearest priced-cell rule
+In a second terminal, from the repository root:
 
-The UI preserves the user's requested terms. When that exact combination is
-absent from the strike matrix, it displays the nearest row that has a finite
-`pricePerMwYr`; it never calculates or invents a replacement price.
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-Candidate distance is calculated as:
+The frontend runs at `http://localhost:5173`.
+
+The default API origin is `http://localhost:8000`. Override it with
+`frontend/.env.local`:
+
+```dotenv
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+Build the production bundle with:
+
+```bash
+cd frontend
+npm run build
+```
+
+## API endpoints
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/health` | Returns API health status. |
+| `GET` | `/strike-matrix` | Returns available deal-term rows and `pricePerMwYr`. |
+| `GET` | `/pnl-curve?term={term}&merchantPct={pct}&cycling={cycling}&profile={profile}` | Returns `asOf`, `strikePerMwYr`, and P&L points for an exact priced cell. |
+
+`/pnl-curve` returns `404` when its exact lookup key is absent. The frontend
+distinguishes that missing-curve case from transport errors and valid responses
+with no points.
+
+## Charting library choice
+
+Recharts was selected because it provides responsive React-native chart
+components, typed composition, tooltips, reference lines, and axis formatting
+without requiring a custom SVG chart implementation.
+
+The chart shows:
+
+- `p` on the X-axis as the P value / percentile.
+- `pnlPerMwYr` on the Y-axis in USD per MW per year.
+- `pnlPerMwYr` as the primary line.
+- `strikePerMwYr` as a dashed reference line.
+- Exact P value and formatted P&L in the tooltip.
+
+Tradeoff: Recharts materially increases the frontend bundle size. The current
+build reports a non-blocking chunk-size warning; route or component-level lazy
+loading would be appropriate if the application grows.
+
+## Nearest-cell snapping
+
+The selector preserves the user's requested terms. If that exact combination
+does not exist in the strike matrix, the frontend displays the nearest matrix
+row that contains a finite `pricePerMwYr`. It uses the real price and P&L curve
+for that displayed cell; it never interpolates or invents a price.
+
+Distance is calculated as:
 
 ```text
 abs(candidate.term - requested.term)
@@ -61,33 +116,61 @@ abs(candidate.term - requested.term)
 + (candidate.profile === requested.profile ? 0 : 100)
 ```
 
-The candidate with the lowest total distance is used. If multiple candidates
-have the same distance, the first row returned by `/strike-matrix` wins. An
-exact row with malformed `pricePerMwYr` is reported as invalid data rather than
-silently replaced.
+The candidate with the lowest total distance wins. Equal-distance ties use the
+first matching row returned by `/strike-matrix`, making the result
+deterministic. Rows with malformed or non-finite prices are not snapping
+candidates.
 
-## Run the frontend
+An exact matrix row with a malformed price is reported as invalid data instead
+of being silently replaced. This keeps data-quality failures visible.
 
-In a second terminal:
+## Time-box tradeoffs
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+- Data is read from a static JSON file rather than a database or pricing
+  service.
+- Backend response shapes use the supplied data directly instead of explicit
+  Pydantic response models.
+- Runtime validation uses small purpose-built TypeScript helpers rather than a
+  schema library such as Zod.
+- Server state is managed with React effects and abort/request guards rather
+  than React Query or SWR.
+- Snapping is performed client-side because the matrix is small and already
+  required by the selector flow.
+- CORS is configured for local Vite origins only.
+- There is no authentication, persistence, caching, telemetry, or deployment
+  configuration.
+- Verification currently relies on strict TypeScript compilation and the
+  production Vite build; automated tests were not added within the time box.
 
-The frontend is available at `http://localhost:5173`.
+These choices keep the implementation reviewable and runnable without hiding
+the boundaries of the prototype.
 
-To use a different API origin, create `frontend/.env.local`:
+## AI tools used
 
-```dotenv
-VITE_API_BASE_URL=http://localhost:8000
-```
+OpenAI Codex was used as an implementation assistant for:
 
-## Production build
+- Inspecting the repository and tracing the frontend/backend data contract.
+- Building the typed API client, selector flow, snapping logic, and chart.
+- Adding defensive numeric parsing and asynchronous stale-response protection.
+- Running TypeScript and production-build verification.
+- Structuring and reviewing this README.
 
-```bash
-cd frontend
-npm run build
-```
-# Battery-dashboard
+No AI model is called by the application at runtime. Product and architecture
+decisions remain explicit in the source code and this documentation.
+
+## What to improve next
+
+1. Add automated tests for numeric parsing, nearest-cell distance and ties,
+   malformed prices, missing curves, empty points, and request races.
+2. Add Pydantic request/response models and generate frontend types from the
+   OpenAPI schema to remove duplicated contracts.
+3. Validate the complete JSON dataset at backend startup and report every
+   invalid row with its lookup key.
+4. Move pricing data behind a versioned database or managed pricing service,
+   with audit history and effective dates.
+5. Add React Query for caching, retries, request deduplication, and clearer
+   server-state ownership.
+6. Lazy-load or isolate the Recharts bundle as more dashboard routes are added.
+7. Add structured logs, frontend error reporting, API metrics, CI checks, and
+   deployment configuration.
+8. Add browser-level accessibility and responsive-layout tests.
