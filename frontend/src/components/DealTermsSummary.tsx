@@ -5,6 +5,7 @@ interface DealTermsSummaryProps {
   terms: DealTerms;
 }
 
+/** Present one set of deal terms in a compact definition list. */
 export function DealTermsSummary({ terms }: DealTermsSummaryProps) {
   return (
     <dl className="terms-summary">

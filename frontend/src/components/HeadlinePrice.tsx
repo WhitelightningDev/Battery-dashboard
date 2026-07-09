@@ -13,6 +13,7 @@ interface HeadlinePriceProps {
   curveState: PnlCurveState;
 }
 
+/** Remove matrix-only fields before presenting a row as displayed deal terms. */
 function toDealTerms(row: StrikeMatrixRow): DealTerms {
   return {
     term: row.term,
@@ -22,6 +23,7 @@ function toDealTerms(row: StrikeMatrixRow): DealTerms {
   };
 }
 
+/** Render the validated headline price, curve date, and snapping disclosure. */
 export function HeadlinePrice({
   matrixRow,
   requestedTerms,

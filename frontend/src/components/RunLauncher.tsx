@@ -8,6 +8,7 @@ interface RunLauncherProps {
 
 const POLL_INTERVAL_MS = 700;
 
+/** Own the optional run lifecycle without coupling it to pricing state. */
 export function RunLauncher({ onComplete }: RunLauncherProps) {
   const [run, setRun] = useState<RunResponse | null>(null);
   const [isLaunching, setIsLaunching] = useState(false);
@@ -67,6 +68,7 @@ export function RunLauncher({ onComplete }: RunLauncherProps) {
     [],
   );
 
+  /** Create a run while preventing overlapping launch requests. */
   async function handleLaunch(): Promise<void> {
     // Defensive cancellation prevents overlapping create requests.
     launchController.current?.abort();

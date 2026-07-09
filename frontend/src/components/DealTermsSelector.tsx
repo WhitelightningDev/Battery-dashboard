@@ -7,16 +7,19 @@ interface DealTermsSelectorProps {
   onChange: (dealTerms: DealTerms) => void;
 }
 
+/** Return sorted unique numeric options for one selector field. */
 function uniqueNumbers(values: number[]): number[] {
   return [...new Set(values)].sort((left, right) => left - right);
 }
 
+/** Return alphabetically sorted unique text options for one selector field. */
 function uniqueStrings(values: string[]): string[] {
   return [...new Set(values)].sort((left, right) =>
     left.localeCompare(right),
   );
 }
 
+/** Render accessible controls for the four requested commercial terms. */
 export function DealTermsSelector({
   matrix,
   selectedTerms,

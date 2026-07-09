@@ -19,6 +19,7 @@ type MatrixState =
   | { status: "error"; message: string }
   | { status: "ready"; rows: StrikeMatrixRow[] };
 
+/** Copy only the deal-term fields required by the P&L endpoint. */
 function getDealTerms(row: StrikeMatrixRow): DealTerms {
   return {
     term: row.term,
@@ -28,6 +29,7 @@ function getDealTerms(row: StrikeMatrixRow): DealTerms {
   };
 }
 
+/** Coordinate matrix loading, pricing resolution, and curve state for the page. */
 function App() {
   const [matrixState, setMatrixState] = useState<MatrixState>({
     status: "loading",

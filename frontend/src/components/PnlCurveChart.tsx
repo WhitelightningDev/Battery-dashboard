@@ -20,6 +20,7 @@ interface PnlCurveChartProps {
   curveState: PnlCurveState;
 }
 
+/** Render the responsive P&L chart or the appropriate non-ready data state. */
 export function PnlCurveChart({ curveState }: PnlCurveChartProps) {
   return (
     <section className="chart-card" aria-labelledby="pnl-chart-title">

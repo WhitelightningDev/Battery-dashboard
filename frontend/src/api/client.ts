@@ -1,6 +1,7 @@
 import type { HealthResponse } from "../types";
 import { getApiBaseUrl } from "../utils";
 
+/** Fetch the backend health endpoint and fail clearly for non-success responses. */
 export async function getHealth(): Promise<HealthResponse> {
   const response = await fetch(`${getApiBaseUrl()}/api/health`);
 
@@ -10,4 +11,3 @@ export async function getHealth(): Promise<HealthResponse> {
 
   return response.json() as Promise<HealthResponse>;
 }
-

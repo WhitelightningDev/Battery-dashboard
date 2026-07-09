@@ -8,14 +8,17 @@ const RUN_STATUSES: ReadonlySet<string> = new Set([
   "complete",
 ]);
 
+/** Narrow an unknown JSON value to a non-null object. */
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+/** Check whether an unknown value is one of the supported run states. */
 function isRunStatus(value: unknown): value is RunStatus {
   return typeof value === "string" && RUN_STATUSES.has(value);
 }
 
+/** Validate and normalize an unknown run API payload. */
 function parseRunResponse(value: unknown): RunResponse {
   // Never trust a successful HTTP response until its JSON shape is checked.
   if (
@@ -33,6 +36,7 @@ function parseRunResponse(value: unknown): RunResponse {
   };
 }
 
+/** Execute a run request and apply shared transport and response validation. */
 async function requestRun(
   path: string,
   init: RequestInit,
@@ -75,10 +79,12 @@ async function requestRun(
   return parseRunResponse(payload);
 }
 
+/** Create a new simulated backend run. */
 export function createRun(signal?: AbortSignal): Promise<RunResponse> {
   return requestRun("/runs", { method: "POST", signal });
 }
 
+/** Fetch the latest status for a run by its ID. */
 export function getRun(
   runId: string,
   signal?: AbortSignal,

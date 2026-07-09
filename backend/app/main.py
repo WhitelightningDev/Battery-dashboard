@@ -25,11 +25,15 @@ RunStatus = Literal["queued", "running", "complete"]
 
 # The response model prevents the API from returning an unsupported run status.
 class RunResponse(BaseModel):
+    """Define the public response shape returned by both run endpoints."""
+
     id: str
     status: RunStatus
 
 # Loads data from the json file and then validates the data
 def load_dashboard_data(path: Path) -> dict[str, Any]:
+    """Load the dashboard JSON file and validate its required top-level keys."""
+
     with path.open(encoding="utf-8") as data_file:
         data = json.load(data_file)
 # validating the  the structure of the loaded data.
@@ -46,6 +50,8 @@ def load_dashboard_data(path: Path) -> dict[str, Any]:
 # This context manager loads the dashboard data when the application starts and handles any errors that may occur during loading.
 @asynccontextmanager
 async def lifespan(application: FastAPI) -> AsyncIterator[None]:
+    """Initialize in-memory run state and load dashboard data during startup."""
+
     # Run state is intentionally process-local for this optional demo workflow.
     application.state.runs = {}
 
@@ -80,10 +86,14 @@ app.add_middleware(
 # Define a health check endpoint that returns a simple status message indicating that the application is running.
 @app.get("/api/health", tags=["system"])
 async def health_check() -> dict[str, str]:
+    """Return a lightweight response used to confirm that the API is running."""
+
     return {"status": "ok"}
 
 
 def get_run_status(created_at: float) -> RunStatus:
+    """Derive the current simulated run status from its monotonic start time."""
+
     # Deriving status from time keeps GET /runs/{id} idempotent.
     elapsed = monotonic() - created_at
 
@@ -97,6 +107,8 @@ def get_run_status(created_at: float) -> RunStatus:
 
 @app.post("/runs", response_model=RunResponse, status_code=201, tags=["runs"])
 async def create_run(request: Request) -> RunResponse:
+    """Create an in-memory run and return its initial queued state."""
+
     run_id = str(uuid4())
     # Only the start time is needed because status is derived when it is read.
     request.app.state.runs[run_id] = monotonic()
@@ -105,6 +117,8 @@ async def create_run(request: Request) -> RunResponse:
 
 @app.get("/runs/{run_id}", response_model=RunResponse, tags=["runs"])
 async def get_run(run_id: str, request: Request) -> RunResponse:
+    """Return the current status of an existing in-memory run."""
+
     created_at = request.app.state.runs.get(run_id)
 
     # Missing IDs are distinct from runs that have not completed yet.
@@ -115,6 +129,8 @@ async def get_run(run_id: str, request: Request) -> RunResponse:
 
 # Define a helper function to retrieve the dashboard data from the application state.
 def get_dashboard_data(request: Request) -> dict[str, Any]:
+    """Return startup-loaded dashboard data or raise a clear server error."""
+
     data = getattr(request.app.state, "dashboard_data", None)
 # If the dashboard data is not available, raise an HTTPException with a 500 status code and a detailed error message.
     if data is None:
@@ -132,6 +148,8 @@ def get_dashboard_data(request: Request) -> dict[str, Any]:
 # this basically checks if the value is a whole number and formats it accordingly
 # otherwise it normalizes the value to remove any trailing zeros.
 def format_key_number(value: Decimal) -> str:
+    """Normalize a decimal for stable lookup keys such as 1 instead of 1.0."""
+
     if value == value.to_integral_value():
         return format(value.quantize(Decimal(1)), "f")
 
@@ -140,6 +158,8 @@ def format_key_number(value: Decimal) -> str:
 # Define an endpoint to retrieve the strike matrix data from the dashboard data.
 @app.get("/strike-matrix", tags=["dashboard"])
 async def get_strike_matrix(request: Request) -> list[Any]:
+    """Return every deal-term and price row from the loaded strike matrix."""
+
     data = get_dashboard_data(request)
     return data["strikeMatrix"]
 
@@ -152,6 +172,8 @@ async def get_pnl_curve(
     cycling: Annotated[Decimal, Query()],
     profile: Annotated[str, Query(min_length=1)],
 ) -> Any:
+    """Return the exact P&L curve identified by the supplied deal terms."""
+
     lookup_key = "|".join(
         (
             format_key_number(term),

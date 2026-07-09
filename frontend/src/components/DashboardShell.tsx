@@ -4,6 +4,7 @@ interface DashboardShellProps {
   children: ReactNode;
 }
 
+/** Render the shared page heading and constrain dashboard content width. */
 export function DashboardShell({ children }: DashboardShellProps) {
   return (
     <main className="dashboard-shell">

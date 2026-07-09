@@ -12,6 +12,7 @@ import {
 
 type JsonObject = Record<string, unknown>;
 
+/** Preserve HTTP status metadata for callers that distinguish missing data. */
 export class PricingApiError extends Error {
   readonly status: number;
 
@@ -22,11 +23,13 @@ export class PricingApiError extends Error {
   }
 }
 
+/** Narrow an unknown JSON value to a non-array object. */
 function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 // API payloads remain unknown until every required numeric field is validated.
+/** Parse a required finite number or report its precise response field. */
 function parseRequiredNumber(value: unknown, field: string): number {
   const parsed = parseFiniteNumber(value);
 
@@ -37,6 +40,7 @@ function parseRequiredNumber(value: unknown, field: string): number {
   return parsed;
 }
 
+/** Validate and normalize a required non-empty profile string. */
 function parseProfile(value: unknown, field: string): Profile {
   if (typeof value !== "string" || value.trim() === "") {
     throw new Error(`Invalid profile value for "${field}".`);
@@ -45,6 +49,7 @@ function parseProfile(value: unknown, field: string): Profile {
   return value.trim();
 }
 
+/** Validate and trim a required non-empty text field. */
 function parseNonEmptyString(value: unknown, field: string): string {
   if (typeof value !== "string" || value.trim() === "") {
     throw new Error(`Invalid text value for "${field}".`);
@@ -53,11 +58,13 @@ function parseNonEmptyString(value: unknown, field: string): string {
   return value.trim();
 }
 
+/** Parse a matrix price while retaining malformed prices as an invalid state. */
 function parsePricePerMwYr(value: unknown): number | null {
   // A bad matrix price is preserved as invalid so the UI can explain it clearly.
   return parseFiniteNumber(value);
 }
 
+/** Parse the four shared deal-term fields from an unknown object. */
 function parseDealTerms(value: unknown, field: string): DealTerms {
   if (!isJsonObject(value)) {
     throw new Error(`Invalid object for "${field}".`);
@@ -74,6 +81,7 @@ function parseDealTerms(value: unknown, field: string): DealTerms {
   };
 }
 
+/** Validate one strike-matrix row and retain its source index in errors. */
 function parseStrikeMatrixRow(
   value: unknown,
   index: number,
@@ -90,6 +98,7 @@ function parseStrikeMatrixRow(
   };
 }
 
+/** Validate one P&L curve point and reject malformed chart coordinates. */
 function parsePnlPoint(value: unknown, index: number): PnlPoint {
   const field = `pnlCurve.points[${index}]`;
 
@@ -106,6 +115,7 @@ function parsePnlPoint(value: unknown, index: number): PnlPoint {
   };
 }
 
+/** Extract a readable error detail from common backend error payloads. */
 function getErrorDetail(value: unknown): string | undefined {
   if (!isJsonObject(value)) {
     return undefined;
@@ -118,6 +128,7 @@ function getErrorDetail(value: unknown): string | undefined {
       : undefined;
 }
 
+/** Fetch and decode JSON while preserving HTTP and network failure context. */
 async function fetchJson(
   path: string,
   signal?: AbortSignal,
@@ -167,6 +178,7 @@ async function fetchJson(
   return payload;
 }
 
+/** Revalidate caller-provided terms before placing them in query parameters. */
 function validateDealTerms(dealTerms: DealTerms): DealTerms {
   return {
     term: parseRequiredNumber(dealTerms.term, "dealTerms.term"),
@@ -179,6 +191,7 @@ function validateDealTerms(dealTerms: DealTerms): DealTerms {
   };
 }
 
+/** Fetch and validate the complete strike matrix. */
 export async function getStrikeMatrix(
   signal?: AbortSignal,
 ): Promise<StrikeMatrixRow[]> {
@@ -191,6 +204,7 @@ export async function getStrikeMatrix(
   return payload.map(parseStrikeMatrixRow);
 }
 
+/** Fetch and validate the P&L curve for one exact set of deal terms. */
 export async function getPnlCurve(
   dealTerms: DealTerms,
   signal?: AbortSignal,

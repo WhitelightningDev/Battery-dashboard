@@ -1,6 +1,7 @@
 import type { DealTerms, StrikeMatrixRow } from "../types";
 import { isFiniteNumber } from "./numbers";
 
+/** Check whether a matrix row exactly matches all four requested deal terms. */
 export function matchesDealTerms(
   row: StrikeMatrixRow,
   terms: DealTerms,
@@ -13,6 +14,7 @@ export function matchesDealTerms(
   );
 }
 
+/** Calculate the documented weighted distance from requested terms to a row. */
 export function getDealTermsDistance(
   row: StrikeMatrixRow,
   requestedTerms: DealTerms,
@@ -26,6 +28,7 @@ export function getDealTermsDistance(
   );
 }
 
+/** Return the closest row containing a real finite price, if one exists. */
 export function findNearestPricedRow(
   rows: StrikeMatrixRow[],
   requestedTerms: DealTerms,
