@@ -9,12 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "highcharts": "^13.0.0",
-    "highcharts-react-official": "^3.2.3",
+    "d3": "^7.9.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",

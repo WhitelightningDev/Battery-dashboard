@@ -195,25 +195,37 @@ function App() {
       {matrixState.status === "ready" &&
         matrixState.rows.length > 0 &&
         selectedTerms && (
-          <div className="dashboard-workspace">
-            <section className="dashboard-controls-pane" aria-label="Dashboard controls">
-              <RunLauncher onComplete={handleRunComplete} />
+          <>
+            <HeadlinePrice
+              matrixRow={displayedMatrixRow}
+              requestedTerms={selectedTerms}
+              wasSnapped={wasSnapped}
+              curveState={curveState}
+            />
+
+            <div className="dashboard-filters-row">
               <DealTermsSelector
                 matrix={matrixState.rows}
                 selectedTerms={selectedTerms}
                 onChange={setSelectedTerms}
               />
-              <HeadlinePrice
-                matrixRow={displayedMatrixRow}
-                requestedTerms={selectedTerms}
-                wasSnapped={wasSnapped}
-                curveState={curveState}
-              />
-            </section>
-            <section className="dashboard-chart-pane" aria-label="Forecast chart workspace">
-              <FanCurveChart curveState={curveState} />
-            </section>
-          </div>
+            </div>
+
+            <div className="dashboard-workspace">
+              <section
+                className="dashboard-controls-pane"
+                aria-label="Dashboard controls"
+              >
+                <RunLauncher onComplete={handleRunComplete} />
+              </section>
+              <section
+                className="dashboard-chart-pane"
+                aria-label="Forecast chart workspace"
+              >
+                <FanCurveChart curveState={curveState} />
+              </section>
+            </div>
+          </>
         )}
     </DashboardShell>
   );

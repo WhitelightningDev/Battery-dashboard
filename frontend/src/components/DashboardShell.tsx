@@ -44,10 +44,9 @@ export function DashboardShell({ children }: DashboardShellProps) {
         <header className="dashboard-header">
           <div>
             <p className="eyebrow">Energy analytics</p>
-            <h1>Battery Revenue Dashboard</h1>
+            <h1>Battery dashboard</h1>
             <p className="subtitle">
-              Configure commercial terms and read forecast uncertainty across
-              the contract horizon.
+              Pricing controls on the left. Forecast fan on the right.
             </p>
           </div>
           <div className="dashboard-header-meta" aria-label="Dashboard status">

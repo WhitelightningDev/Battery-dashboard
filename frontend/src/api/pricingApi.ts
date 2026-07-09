@@ -2,6 +2,8 @@ import type {
   DealTerms,
   FanBandPoint,
   FanCurveResponse,
+  FanHistoryPoint,
+  FanTimelinePoint,
   PnlCurveResponse,
   PnlPoint,
   Profile,
@@ -33,6 +35,21 @@ function isJsonObject(value: unknown): value is JsonObject {
 // API payloads remain unknown until every required numeric field is validated.
 /** Parse a required finite number or report its precise response field. */
 function parseRequiredNumber(value: unknown, field: string): number {
+  const parsed = parseFiniteNumber(value);
+
+  if (parsed === null) {
+    throw new Error(`Invalid numeric value for "${field}".`);
+  }
+
+  return parsed;
+}
+
+/** Parse an optional finite number while preserving missing fields as undefined. */
+function parseOptionalNumber(value: unknown, field: string): number | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
   const parsed = parseFiniteNumber(value);
 
   if (parsed === null) {
@@ -132,6 +149,63 @@ function parseFanBandPoint(value: unknown, index: number): FanBandPoint {
     p50: parseRequiredNumber(value.p50, `${field}.p50`),
     p75: parseRequiredNumber(value.p75, `${field}.p75`),
     p90: parseRequiredNumber(value.p90, `${field}.p90`),
+  };
+}
+
+/** Validate one historical fan-chart point and reject malformed coordinates. */
+function parseFanHistoryPoint(value: unknown, index: number): FanHistoryPoint {
+  const field = `fanCurve.history[${index}]`;
+
+  if (!isJsonObject(value)) {
+    throw new Error(`Invalid object for "${field}".`);
+  }
+
+  return {
+    year: parseRequiredNumber(value.year, `${field}.year`),
+    pnlPerMwYr: parseRequiredNumber(
+      value.pnlPerMwYr,
+      `${field}.pnlPerMwYr`,
+    ),
+  };
+}
+
+/** Validate one fan timeline point and preserve the richer calendar-year data. */
+function parseFanTimelinePoint(
+  value: unknown,
+  index: number,
+): FanTimelinePoint {
+  const field = `fanCurve.timeline[${index}]`;
+
+  if (!isJsonObject(value)) {
+    throw new Error(`Invalid object for "${field}".`);
+  }
+
+  const kind = value.kind as FanTimelinePoint["kind"];
+
+  if (
+    kind !== "history" &&
+    kind !== "bridge" &&
+    kind !== "forecast"
+  ) {
+    throw new Error(`Invalid timeline kind for "${field}".`);
+  }
+
+  return {
+    kind,
+    calendarYear: parseRequiredNumber(
+      value.calendarYear,
+      `${field}.calendarYear`,
+    ),
+    pnlPerMwYr: parseOptionalNumber(value.pnlPerMwYr, `${field}.pnlPerMwYr`),
+    forecastYear: parseOptionalNumber(
+      value.forecastYear,
+      `${field}.forecastYear`,
+    ),
+    p10: parseOptionalNumber(value.p10, `${field}.p10`),
+    p25: parseOptionalNumber(value.p25, `${field}.p25`),
+    p50: parseOptionalNumber(value.p50, `${field}.p50`),
+    p75: parseOptionalNumber(value.p75, `${field}.p75`),
+    p90: parseOptionalNumber(value.p90, `${field}.p90`),
   };
 }
 
@@ -321,7 +395,9 @@ export async function getFanCurve(
   }
 
   const term = parseRequiredNumber(payload.term, "fanCurve.term");
+  const history = Array.isArray(payload.history) ? payload.history : [];
   const bands = Array.isArray(payload.bands) ? payload.bands : [];
+  const timeline = Array.isArray(payload.timeline) ? payload.timeline : [];
 
   return {
     dealTerms: validatedTerms,
@@ -331,6 +407,24 @@ export async function getFanCurve(
       "fanCurve.strikePerMwYr",
     ),
     term,
+    history: history.map(parseFanHistoryPoint),
     bands: validateFanBands(term, bands.map(parseFanBandPoint)),
+    timeline: timeline.map(parseFanTimelinePoint),
+    historyStartYear: parseOptionalNumber(
+      payload.historyStartYear,
+      "fanCurve.historyStartYear",
+    ),
+    historyEndYear: parseOptionalNumber(
+      payload.historyEndYear,
+      "fanCurve.historyEndYear",
+    ),
+    forecastStartYear: parseOptionalNumber(
+      payload.forecastStartYear,
+      "fanCurve.forecastStartYear",
+    ),
+    forecastEndYear: parseOptionalNumber(
+      payload.forecastEndYear,
+      "fanCurve.forecastEndYear",
+    ),
   };
 }

@@ -63,13 +63,38 @@ export interface FanBandPoint {
   p90: number;
 }
 
+/** One historical annual point used to anchor the forecast fan chart. */
+export interface FanHistoryPoint {
+  year: number;
+  pnlPerMwYr: number;
+}
+
+/** One point on the combined history + forecast fan timeline. */
+export interface FanTimelinePoint {
+  kind: "history" | "bridge" | "forecast";
+  calendarYear: number;
+  pnlPerMwYr?: number;
+  forecastYear?: number;
+  p10?: number;
+  p25?: number;
+  p50?: number;
+  p75?: number;
+  p90?: number;
+}
+
 /** Validated fan-curve payload associated with an exact priced cell. */
 export interface FanCurveResponse {
   dealTerms: DealTerms;
   asOf: string;
   strikePerMwYr: number;
   term: number;
+  historyStartYear?: number;
+  historyEndYear?: number;
+  forecastStartYear?: number;
+  forecastEndYear?: number;
+  history: FanHistoryPoint[];
   bands: FanBandPoint[];
+  timeline?: FanTimelinePoint[];
 }
 
 /** Discriminated UI states for every fan-curve request outcome. */
