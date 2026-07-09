@@ -37,14 +37,146 @@ select {
   font: inherit;
 }
 
+.app-shell {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.side-nav {
+  position: sticky;
+  top: 0;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  padding: 24px 18px;
+  border-right: 1px solid #d8e1dc;
+  background: #0f1b15;
+  color: #dce8e1;
+}
+
+.brand-block {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 8px 24px;
+}
+
+.brand-mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 12px;
+  color: #0f1b15;
+  background: #8fc6a4;
+  font-weight: 850;
+}
+
+.brand-block strong,
+.brand-block span {
+  display: block;
+}
+
+.brand-block strong {
+  font-size: 0.9375rem;
+}
+
+.brand-block span {
+  margin-top: 2px;
+  color: #9fb5aa;
+  font-size: 0.75rem;
+}
+
+.nav-menu {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.nav-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 11px 12px;
+  border-radius: 10px;
+  color: #c6d6ce;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.nav-item:hover,
+.nav-item-active {
+  color: #fff;
+  background: rgb(143 198 164 / 16%);
+}
+
+.nav-item-muted {
+  color: #95a79e;
+}
+
+.side-nav-footer {
+  display: grid;
+  gap: 4px;
+  margin-top: auto;
+  padding: 14px;
+  border: 1px solid rgb(216 225 220 / 14%);
+  border-radius: 14px;
+  background: rgb(255 255 255 / 5%);
+}
+
+.side-nav-footer span {
+  color: #9fb5aa;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.side-nav-footer strong {
+  font-size: 0.875rem;
+}
+
 .dashboard-shell {
-  width: min(1120px, calc(100% - 40px));
-  margin: 0 auto;
-  padding: 72px 0;
+  min-width: 0;
+  padding: 32px;
 }
 
 .dashboard-header {
-  max-width: 720px;
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.dashboard-header > div:first-child {
+  max-width: 760px;
+}
+
+.dashboard-header-meta {
+  display: grid;
+  gap: 4px;
+  min-width: 132px;
+  padding: 12px 14px;
+  border: 1px solid #d8e1dc;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 14px 36px rgb(35 72 51 / 7%);
+}
+
+.dashboard-header-meta span {
+  color: #7b8981;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dashboard-header-meta strong {
+  color: #15201a;
+  font-size: 0.875rem;
 }
 
 .eyebrow {
@@ -63,8 +195,8 @@ p {
 }
 
 h1 {
-  margin-bottom: 16px;
-  font-size: clamp(2.25rem, 6vw, 4.5rem);
+  margin-bottom: 10px;
+  font-size: clamp(2rem, 4vw, 3.5rem);
   line-height: 1;
   letter-spacing: -0.05em;
 }
@@ -83,7 +215,7 @@ h1 {
   display: flex;
   gap: 16px;
   align-items: flex-start;
-  margin-top: 56px;
+  margin-top: 0;
   padding: 28px;
   border: 1px solid #d8e1dc;
   border-radius: 18px;
@@ -143,7 +275,6 @@ h1 {
 
 .run-launcher {
   justify-content: space-between;
-  margin-top: 40px;
 }
 
 .run-launcher .eyebrow {
@@ -215,12 +346,33 @@ h1 {
 
 .headline-card {
   display: block;
-  margin-top: 20px;
 }
 
 .chart-card {
   display: block;
-  margin-top: 20px;
+  height: 100%;
+}
+
+.dashboard-workspace {
+  display: grid;
+  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.dashboard-controls-pane,
+.dashboard-chart-pane {
+  display: grid;
+  min-width: 0;
+  gap: 20px;
+}
+
+.dashboard-controls-pane {
+  align-content: start;
+}
+
+.dashboard-chart-pane {
+  min-height: 680px;
 }
 
 .headline-card .eyebrow {
@@ -264,6 +416,15 @@ h1 {
   margin-bottom: 24px;
 }
 
+.chart-context {
+  max-width: 420px;
+  margin: 0;
+  color: #607068;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-align: right;
+}
+
 .chart-heading h2 {
   margin-bottom: 0;
   font-size: 1.125rem;
@@ -275,6 +436,7 @@ h1 {
 
 .chart-legend {
   display: flex;
+  flex-wrap: wrap;
   gap: 18px;
   color: #607068;
   font-size: 0.75rem;
@@ -297,14 +459,60 @@ h1 {
   border-color: #25734a;
 }
 
+.legend-line-median {
+  border-color: #145c38;
+}
+
 .legend-line-strike {
   border-color: #d97706;
   border-top-style: dashed;
 }
 
+.legend-band {
+  display: inline-block;
+  width: 22px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.legend-band-outer {
+  background: #b7dcc8;
+}
+
+.legend-band-inner {
+  background: #5ea77d;
+}
+
 .chart-container {
   width: 100%;
-  height: 420px;
+  height: 500px;
+}
+
+.highcharts-container-shell {
+  min-height: 500px;
+}
+
+.highcharts-container-shell .highcharts-container,
+.highcharts-container-shell .highcharts-root {
+  width: 100% !important;
+}
+
+.highcharts-fan-tooltip {
+  margin-top: 8px;
+  border-spacing: 0 4px;
+}
+
+.highcharts-fan-tooltip td:first-child {
+  padding-right: 18px;
+  color: #607068;
+  font-weight: 700;
+}
+
+.highcharts-fan-tooltip td:last-child {
+  color: #26332c;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  text-align: right;
 }
 
 .chart-state {
@@ -376,6 +584,12 @@ h1 {
   margin: 0;
 }
 
+.dashboard-controls-pane .terms-comparison,
+.dashboard-controls-pane .terms-summary,
+.dashboard-controls-pane .selector-grid {
+  grid-template-columns: 1fr;
+}
+
 .terms-summary div {
   min-width: 0;
 }
@@ -445,10 +659,56 @@ h1 {
   }
 }
 
+@media (max-width: 1120px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .side-nav {
+    position: static;
+    min-height: auto;
+  }
+
+  .nav-menu {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .side-nav-footer {
+    display: none;
+  }
+
+  .dashboard-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-chart-pane {
+    min-height: 0;
+  }
+}
+
 @media (max-width: 640px) {
   .dashboard-shell {
-    width: min(100% - 28px, 1120px);
-    padding: 48px 0;
+    padding: 24px 14px;
+  }
+
+  .dashboard-header {
+    display: grid;
+  }
+
+  .dashboard-header-meta {
+    width: 100%;
+  }
+
+  .nav-menu {
+    grid-template-columns: 1fr;
+  }
+
+  .state-card,
+  .run-launcher,
+  .selector-card,
+  .headline-card,
+  .chart-card {
+    padding: 20px;
   }
 
   .selector-grid {
@@ -476,7 +736,11 @@ h1 {
     display: grid;
   }
 
+  .chart-context {
+    text-align: left;
+  }
+
   .chart-container {
-    height: 340px;
+    height: 420px;
   }
 }

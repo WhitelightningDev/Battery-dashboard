@@ -1,5 +1,7 @@
 import type {
   DealTerms,
+  FanBandPoint,
+  FanCurveResponse,
   PnlCurveResponse,
   PnlPoint,
   Profile,
@@ -113,6 +115,64 @@ function parsePnlPoint(value: unknown, index: number): PnlPoint {
       `${field}.pnlPerMwYr`,
     ),
   };
+}
+
+/** Validate one yearly fan-band row and reject malformed chart coordinates. */
+function parseFanBandPoint(value: unknown, index: number): FanBandPoint {
+  const field = `fanCurve.bands[${index}]`;
+
+  if (!isJsonObject(value)) {
+    throw new Error(`Invalid object for "${field}".`);
+  }
+
+  return {
+    year: parseRequiredNumber(value.year, `${field}.year`),
+    p10: parseRequiredNumber(value.p10, `${field}.p10`),
+    p25: parseRequiredNumber(value.p25, `${field}.p25`),
+    p50: parseRequiredNumber(value.p50, `${field}.p50`),
+    p75: parseRequiredNumber(value.p75, `${field}.p75`),
+    p90: parseRequiredNumber(value.p90, `${field}.p90`),
+  };
+}
+
+/** Reject fan bands that would render a misleading distribution. */
+function validateFanBands(term: number, bands: FanBandPoint[]): FanBandPoint[] {
+  if (bands.length === 0) {
+    return bands;
+  }
+
+  if (bands.length !== term) {
+    throw new Error(
+      `Invalid fan curve: expected ${term} yearly bands, received ${bands.length}.`,
+    );
+  }
+
+  const orderedBands = [...bands].sort((left, right) => left.year - right.year);
+
+  orderedBands.forEach((band, index) => {
+    const expectedYear = index + 1;
+
+    if (band.year !== expectedYear) {
+      throw new Error(
+        `Invalid fan curve: expected year ${expectedYear}, received ${band.year}.`,
+      );
+    }
+
+    if (
+      !(
+        band.p10 <= band.p25 &&
+        band.p25 <= band.p50 &&
+        band.p50 <= band.p75 &&
+        band.p75 <= band.p90
+      )
+    ) {
+      throw new Error(
+        `Invalid fan curve: percentile bands are not monotonic in year ${band.year}.`,
+      );
+    }
+  });
+
+  return orderedBands;
 }
 
 /** Extract a readable error detail from common backend error payloads. */
@@ -236,5 +296,41 @@ export async function getPnlCurve(
       "pnlCurve.strikePerMwYr",
     ),
     points: points.map(parsePnlPoint),
+  };
+}
+
+/** Fetch and validate the fan curve for one exact set of deal terms. */
+export async function getFanCurve(
+  dealTerms: DealTerms,
+  signal?: AbortSignal,
+): Promise<FanCurveResponse> {
+  const validatedTerms = validateDealTerms(dealTerms);
+  const query = new URLSearchParams({
+    term: String(validatedTerms.term),
+    merchantPct: String(validatedTerms.merchantPct),
+    cycling: String(validatedTerms.cycling),
+    profile: validatedTerms.profile,
+  });
+  const payload = await fetchJson(
+    `/fan-curve?${query.toString()}`,
+    signal,
+  );
+
+  if (!isJsonObject(payload)) {
+    throw new Error("Invalid fan curve response: expected an object.");
+  }
+
+  const term = parseRequiredNumber(payload.term, "fanCurve.term");
+  const bands = Array.isArray(payload.bands) ? payload.bands : [];
+
+  return {
+    dealTerms: validatedTerms,
+    asOf: parseNonEmptyString(payload.asOf, "fanCurve.asOf"),
+    strikePerMwYr: parseRequiredNumber(
+      payload.strikePerMwYr,
+      "fanCurve.strikePerMwYr",
+    ),
+    term,
+    bands: validateFanBands(term, bands.map(parseFanBandPoint)),
   };
 }

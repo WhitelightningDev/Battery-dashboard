@@ -52,3 +52,30 @@ export type PnlCurveState =
   | { status: "missing" }
   | { status: "empty"; response: PnlCurveResponse }
   | { status: "ready"; response: PnlCurveResponse };
+
+/** One yearly percentile band row used by the P-value fan chart. */
+export interface FanBandPoint {
+  year: number;
+  p10: number;
+  p25: number;
+  p50: number;
+  p75: number;
+  p90: number;
+}
+
+/** Validated fan-curve payload associated with an exact priced cell. */
+export interface FanCurveResponse {
+  dealTerms: DealTerms;
+  asOf: string;
+  strikePerMwYr: number;
+  term: number;
+  bands: FanBandPoint[];
+}
+
+/** Discriminated UI states for every fan-curve request outcome. */
+export type FanCurveState =
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "missing" }
+  | { status: "empty"; response: FanCurveResponse }
+  | { status: "ready"; response: FanCurveResponse };

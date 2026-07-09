@@ -15,7 +15,9 @@ from pydantic import BaseModel
 
 #logging for the application 
 logger = logging.getLogger(__name__)
-DATA_FILE = Path(__file__).resolve().parents[1] / "take-home-data.json"
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+DATA_FILE = BACKEND_DIR / "take-home-data-v2.json"
+LEGACY_DATA_FILE = BACKEND_DIR / "take-home-data.json"
 # Runs are simulated with elapsed time so polling remains read-only.
 RUN_QUEUED_SECONDS = 1.0
 RUN_COMPLETE_SECONDS = 2.5
@@ -34,7 +36,9 @@ class RunResponse(BaseModel):
 def load_dashboard_data(path: Path) -> dict[str, Any]:
     """Load the dashboard JSON file and validate its required top-level keys."""
 
-    with path.open(encoding="utf-8") as data_file:
+    effective_path = path if path.exists() else LEGACY_DATA_FILE
+
+    with effective_path.open(encoding="utf-8") as data_file:
         data = json.load(data_file)
 # validating the  the structure of the loaded data.
     if not isinstance(data, dict): # it not a dictionary 
@@ -150,7 +154,7 @@ def get_dashboard_data(request: Request) -> dict[str, Any]:
             status_code=500,
             detail=(
                 "Dashboard data is unavailable. Ensure "
-                "backend/take-home-data.json exists and contains valid data."
+                "backend/take-home-data-v2.json exists and contains valid data."
             ),
         )
 
@@ -166,6 +170,50 @@ def format_key_number(value: Decimal) -> str:
         return format(value.quantize(Decimal(1)), "f")
 
     return format(value.normalize(), "f")
+
+
+def build_lookup_key(
+    term: Decimal,
+    merchant_pct: Decimal,
+    cycling: Decimal,
+    profile: str,
+) -> str:
+    """Build the shared term|merchantPct|cycling|profile lookup key."""
+
+    return "|".join(
+        (
+            format_key_number(term),
+            format_key_number(merchant_pct),
+            format_key_number(cycling),
+            profile,
+        )
+    )
+
+
+def get_curve_block(
+    request: Request,
+    block_name: str,
+    lookup_key: str,
+    display_name: str,
+) -> Any:
+    """Return one keyed dashboard data block or raise a precise missing error."""
+
+    data = get_dashboard_data(request)
+    block = data.get(block_name)
+
+    if not isinstance(block, dict):
+        raise HTTPException(
+            status_code=500,
+            detail=f"Dashboard data must contain a {block_name} object.",
+        )
+
+    if lookup_key not in block:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No {display_name} found for lookup key: {lookup_key}",
+        )
+
+    return block[lookup_key]
 
 # Define an endpoint to retrieve the strike matrix data from the dashboard data.
 @app.get("/api/strike-matrix", tags=["dashboard"])
@@ -188,24 +236,35 @@ async def get_pnl_curve(
 ) -> Any:
     """Return the exact P&L curve identified by the supplied deal terms."""
 
-    lookup_key = "|".join(
-        (
-            format_key_number(term),
-            format_key_number(merchant_pct),
-            format_key_number(cycling),
-            profile,
-        )
-    )
-    data = get_dashboard_data(request)
-    pnl_curves = data["pnlCurves"]
+    lookup_key = build_lookup_key(term, merchant_pct, cycling, profile)
+    return get_curve_block(request, "pnlCurves", lookup_key, "P&L curve")
 
-# Check if the lookup key exists in the P&L curves data. If not
-# raise an HTTPException with a 404 status code and a detailed error message.
-    if lookup_key not in pnl_curves:
-        raise HTTPException(
-            status_code=404,
-            detail=f"No P&L curve found for lookup key: {lookup_key}",
-        )
-    
-# If the lookup key exists, return the corresponding P&L curve data.
-    return pnl_curves[lookup_key]
+
+@app.get("/api/fan-curve", tags=["dashboard"])
+@app.get("/fan-curve", include_in_schema=False)
+async def get_fan_curve(
+    request: Request,
+    term: Annotated[Decimal, Query()],
+    merchant_pct: Annotated[Decimal, Query(alias="merchantPct")],
+    cycling: Annotated[Decimal, Query()],
+    profile: Annotated[str, Query(min_length=1)],
+) -> Any:
+    """Return the exact fan-curve block identified by the supplied deal terms."""
+
+    lookup_key = build_lookup_key(term, merchant_pct, cycling, profile)
+    return get_curve_block(request, "fanCurves", lookup_key, "fan curve")
+
+
+@app.get("/api/cashflow", tags=["dashboard"])
+@app.get("/cashflow", include_in_schema=False)
+async def get_cashflow(
+    request: Request,
+    term: Annotated[Decimal, Query()],
+    merchant_pct: Annotated[Decimal, Query(alias="merchantPct")],
+    cycling: Annotated[Decimal, Query()],
+    profile: Annotated[str, Query(min_length=1)],
+) -> Any:
+    """Return the exact cashflow block identified by the supplied deal terms."""
+
+    lookup_key = build_lookup_key(term, merchant_pct, cycling, profile)
+    return get_curve_block(request, "cashflows", lookup_key, "cashflow")

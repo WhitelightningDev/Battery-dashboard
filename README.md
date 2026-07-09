@@ -3,7 +3,7 @@
 A small full-stack pricing dashboard for exploring battery revenue deal terms.
 Users select term, merchant percentage, cycling, and profile values; the
 dashboard displays the applicable annual price per MW and a P&L curve across
-P-value percentiles.
+the contract term as a percentile fan chart.
 
 The implementation is designed to be honest about imperfect source data:
 
@@ -12,14 +12,14 @@ The implementation is designed to be honest about imperfect source data:
 - Unpriced combinations snap to a real, nearby priced matrix cell.
 - Requested terms and displayed priced terms remain visible.
 - Loading, missing, empty, malformed, and API-error states are explicit.
-- Stale P&L requests cannot overwrite a newer selection.
+- Stale fan-curve requests cannot overwrite a newer selection.
 
 ## Technology
 
 - Backend: Python, FastAPI, Uvicorn
 - Frontend: TypeScript, React 19, Vite
-- Charting: Recharts
-- Data source: `backend/take-home-data.json`
+- Charting: Highcharts fan chart
+- Data source: `backend/take-home-data-v2.json`
 
 ## Prerequisites
 
@@ -41,7 +41,7 @@ python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 The API runs at `http://localhost:8000`. FastAPI documentation is available at
 `http://localhost:8000/docs`.
 
-The backend loads `backend/take-home-data.json` once at startup. Restart the
+The backend loads `backend/take-home-data-v2.json` once at startup. Restart the
 backend after changing that file.
 
 ## Run the frontend
@@ -82,28 +82,31 @@ npm run build
 | `GET` | `/api/runs/{id}` | Returns the current `queued`, `running`, or `complete` run state. |
 | `GET` | `/api/strike-matrix` | Returns available deal-term rows and `pricePerMwYr`. |
 | `GET` | `/api/pnl-curve?term={term}&merchantPct={pct}&cycling={cycling}&profile={profile}` | Returns `asOf`, `strikePerMwYr`, and P&L points for an exact priced cell. |
+| `GET` | `/api/fan-curve?term={term}&merchantPct={pct}&cycling={cycling}&profile={profile}` | Returns `asOf`, `strikePerMwYr`, `term`, and yearly P10/P25/P50/P75/P90 bands for an exact priced cell. |
+| `GET` | `/api/cashflow?term={term}&merchantPct={pct}&cycling={cycling}&profile={profile}` | Returns yearly contracted, merchant, opex, and cumulative net rows for an exact priced cell. |
 
-`/pnl-curve` returns `404` when its exact lookup key is absent. The frontend
-distinguishes that missing-curve case from transport errors and valid responses
-with no points.
+`/fan-curve`, `/cashflow`, and `/pnl-curve` return `404` when the exact lookup
+key is absent. The frontend distinguishes missing fan-curve data from transport
+errors and valid responses with no annual bands.
 
 ## Charting library choice
 
-Recharts was selected because it provides responsive React-native chart
-components, typed composition, tooltips, reference lines, and axis formatting
-without requiring a custom SVG chart implementation.
+Highcharts was selected for the follow-up fan chart to align with the supplied
+reference implementation and provide mature chart interactions, range-series
+rendering, accessibility support, and tooltips with limited custom chart code.
 
 The chart shows:
 
-- `p` on the X-axis as the P value / percentile.
-- `pnlPerMwYr` on the Y-axis in USD per MW per year.
-- `pnlPerMwYr` as the primary line.
+- Contract year on the X-axis.
+- P&L per MW per year on the Y-axis.
+- `p10`–`p90` as the outer uncertainty band.
+- `p25`–`p75` as the inner uncertainty band.
+- `p50` as the median forecast line.
 - `strikePerMwYr` as a dashed reference line.
-- Exact P value and formatted P&L in the tooltip.
+- Yearly percentile values and strike in the hover tooltip.
 
-Tradeoff: Recharts materially increases the frontend bundle size. The current
-build reports a non-blocking chunk-size warning; route or component-level lazy
-loading would be appropriate if the application grows.
+Tradeoff: Highcharts is heavier than the prior custom SVG implementation and
+requires appropriate licensing for commercial production use.
 
 ## Nearest-cell snapping
 
@@ -122,9 +125,8 @@ abs(candidate.term - requested.term)
 ```
 
 The candidate with the lowest total distance wins. Equal-distance ties use the
-first matching row returned by `/strike-matrix`, making the result
-deterministic. Rows with malformed or non-finite prices are not snapping
-candidates.
+first matching row returned by `/strike-matrix`, making the result deterministic.
+Rows with malformed or non-finite prices are not snapping candidates.
 
 An exact matrix row with a malformed price is reported as invalid data instead
 of being silently replaced. This keeps data-quality failures visible.
@@ -133,6 +135,8 @@ of being silently replaced. This keeps data-quality failures visible.
 
 - Data is read from a static JSON file rather than a database or pricing
   service.
+- The v2 fan/cashflow data is generated locally from the original P&L curves
+  because the external `take-home-data-v2.json` attachment was unavailable.
 - Optional run records are process-local and disappear when the backend
   restarts; their queued/running/complete lifecycle is simulated by elapsed
   time.
@@ -158,7 +162,7 @@ the boundaries of the prototype.
 OpenAI Codex was used as an implementation assistant for:
 
 - Inspecting the repository and tracing the frontend/backend data contract.
-- Building the typed API client, selector flow, snapping logic, and chart.
+- Building the typed API client, selector flow, snapping logic, and fan chart.
 - Adding defensive numeric parsing and asynchronous stale-response protection.
 - Running TypeScript and production-build verification.
 - Structuring and reviewing this README.
@@ -178,7 +182,8 @@ decisions remain explicit in the source code and this documentation.
    with audit history and effective dates.
 5. Add React Query for caching, retries, request deduplication, and clearer
    server-state ownership.
-6. Lazy-load or isolate the Recharts bundle as more dashboard routes are added.
+6. Add focused chart tests for malformed percentile bands, missing years, and
+   empty fan curves.
 7. Add structured logs, frontend error reporting, API metrics, CI checks, and
    deployment configuration.
 8. Add browser-level accessibility and responsive-layout tests.

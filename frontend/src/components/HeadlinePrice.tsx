@@ -1,6 +1,6 @@
 import type {
   DealTerms,
-  PnlCurveState,
+  FanCurveState,
   StrikeMatrixRow,
 } from "../types";
 import { formatCurrency, isFiniteNumber } from "../utils";
@@ -10,7 +10,7 @@ interface HeadlinePriceProps {
   matrixRow: StrikeMatrixRow | undefined;
   requestedTerms: DealTerms;
   wasSnapped: boolean;
-  curveState: PnlCurveState;
+  curveState: FanCurveState;
 }
 
 /** Remove matrix-only fields before presenting a row as displayed deal terms. */
@@ -65,13 +65,13 @@ export function HeadlinePrice({
       )}
 
       <div className="curve-status" aria-live="polite">
-        {curveState.status === "loading" && <span>Loading P&amp;L curve…</span>}
+        {curveState.status === "loading" && <span>Loading fan curve…</span>}
         {curveState.status === "error" && (
           <span className="headline-error">{curveState.message}</span>
         )}
         {curveState.status === "missing" && (
           <span className="headline-error">
-            No P&amp;L curve exists for the displayed priced terms.
+            No fan curve exists for the displayed priced terms.
           </span>
         )}
         {(curveState.status === "ready" ||
@@ -85,7 +85,7 @@ export function HeadlinePrice({
         )}
         {curveState.status === "empty" && (
           <span className="curve-empty">
-            P&amp;L curve contains no points.
+            Fan curve contains no annual percentile bands.
           </span>
         )}
       </div>

@@ -9,9 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "highcharts": "^13.0.0",
+    "highcharts-react-official": "^3.2.3",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "recharts": "^3.9.2"
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
@@ -21,4 +22,3 @@
     "vite": "^8.1.4"
   }
 }
-

@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getPnlCurve, getStrikeMatrix, PricingApiError } from "./api";
+import { getFanCurve, getStrikeMatrix, PricingApiError } from "./api";
 import {
   DashboardShell,
   DealTermsSelector,
+  FanCurveChart,
   HeadlinePrice,
-  PnlCurveChart,
   RunLauncher,
 } from "./components";
 import type {
   DealTerms,
-  PnlCurveState,
+  FanCurveState,
   StrikeMatrixRow,
 } from "./types";
 import { findNearestPricedRow, matchesDealTerms } from "./utils";
@@ -19,7 +19,7 @@ type MatrixState =
   | { status: "error"; message: string }
   | { status: "ready"; rows: StrikeMatrixRow[] };
 
-/** Copy only the deal-term fields required by the P&L endpoint. */
+/** Copy only the deal-term fields required by the fan-curve endpoint. */
 function getDealTerms(row: StrikeMatrixRow): DealTerms {
   return {
     term: row.term,
@@ -29,13 +29,13 @@ function getDealTerms(row: StrikeMatrixRow): DealTerms {
   };
 }
 
-/** Coordinate matrix loading, pricing resolution, and curve state for the page. */
+/** Coordinate matrix loading, pricing resolution, and fan-curve state. */
 function App() {
   const [matrixState, setMatrixState] = useState<MatrixState>({
     status: "loading",
   });
   const [selectedTerms, setSelectedTerms] = useState<DealTerms | null>(null);
-  const [curveState, setCurveState] = useState<PnlCurveState>({
+  const [curveState, setCurveState] = useState<FanCurveState>({
     status: "loading",
   });
   const curveRequestId = useRef(0);
@@ -100,7 +100,7 @@ function App() {
     if (!displayedMatrixRow) {
       setCurveState({
         status: "error",
-        message: "P&L curve unavailable: no priced cell is available.",
+        message: "Fan curve unavailable: no priced cell is available.",
       });
       return;
     }
@@ -108,7 +108,7 @@ function App() {
     const controller = new AbortController();
     setCurveState({ status: "loading" });
 
-    void getPnlCurve(getDealTerms(displayedMatrixRow), controller.signal)
+    void getFanCurve(getDealTerms(displayedMatrixRow), controller.signal)
       .then((response) => {
         // Only the newest request may commit curve data to the UI.
         if (
@@ -119,7 +119,7 @@ function App() {
         }
 
         setCurveState(
-          response.points.length === 0
+          response.bands.length === 0
             ? { status: "empty", response }
             : { status: "ready", response },
         );
@@ -142,8 +142,8 @@ function App() {
           status: "error",
           message:
             error instanceof Error
-              ? `P&L curve unavailable: ${error.message}`
-              : "P&L curve unavailable.",
+              ? `Fan curve unavailable: ${error.message}`
+              : "Fan curve unavailable.",
         });
       });
 
@@ -152,8 +152,6 @@ function App() {
 
   return (
     <DashboardShell>
-      <RunLauncher onComplete={handleRunComplete} />
-
       {matrixState.status === "loading" && (
         <section
           className="state-card"
@@ -197,20 +195,25 @@ function App() {
       {matrixState.status === "ready" &&
         matrixState.rows.length > 0 &&
         selectedTerms && (
-          <>
-            <DealTermsSelector
-              matrix={matrixState.rows}
-              selectedTerms={selectedTerms}
-              onChange={setSelectedTerms}
-            />
-            <HeadlinePrice
-              matrixRow={displayedMatrixRow}
-              requestedTerms={selectedTerms}
-              wasSnapped={wasSnapped}
-              curveState={curveState}
-            />
-            <PnlCurveChart curveState={curveState} />
-          </>
+          <div className="dashboard-workspace">
+            <section className="dashboard-controls-pane" aria-label="Dashboard controls">
+              <RunLauncher onComplete={handleRunComplete} />
+              <DealTermsSelector
+                matrix={matrixState.rows}
+                selectedTerms={selectedTerms}
+                onChange={setSelectedTerms}
+              />
+              <HeadlinePrice
+                matrixRow={displayedMatrixRow}
+                requestedTerms={selectedTerms}
+                wasSnapped={wasSnapped}
+                curveState={curveState}
+              />
+            </section>
+            <section className="dashboard-chart-pane" aria-label="Forecast chart workspace">
+              <FanCurveChart curveState={curveState} />
+            </section>
+          </div>
         )}
     </DashboardShell>
   );
