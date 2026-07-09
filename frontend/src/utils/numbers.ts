@@ -1,3 +1,4 @@
+// The full string must be numeric; partial values such as "138too" are rejected.
 const DECIMAL_NUMBER_PATTERN =
   /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/;
 

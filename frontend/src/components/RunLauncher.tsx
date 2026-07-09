@@ -17,6 +17,7 @@ export function RunLauncher({ onComplete }: RunLauncherProps) {
     run?.status === "queued" || run?.status === "running";
 
   useEffect(() => {
+    // Schedule one poll at a time; each response drives the next render and poll.
     if (!isPending || !run) {
       return;
     }
@@ -33,6 +34,7 @@ export function RunLauncher({ onComplete }: RunLauncherProps) {
           setError(null);
 
           if (nextRun.status === "complete") {
+            // Completion is the only integration point with the pricing flow.
             onComplete();
           }
         })
@@ -41,6 +43,7 @@ export function RunLauncher({ onComplete }: RunLauncherProps) {
             return;
           }
 
+          // Return to a launchable state instead of trapping the disabled button.
           setRun(null);
           setError(
             pollError instanceof Error
@@ -51,6 +54,7 @@ export function RunLauncher({ onComplete }: RunLauncherProps) {
     }, POLL_INTERVAL_MS);
 
     return () => {
+      // Selection changes and unmounts must not leave timers or requests active.
       window.clearTimeout(timeoutId);
       controller.abort();
     };
@@ -64,6 +68,7 @@ export function RunLauncher({ onComplete }: RunLauncherProps) {
   );
 
   async function handleLaunch(): Promise<void> {
+    // Defensive cancellation prevents overlapping create requests.
     launchController.current?.abort();
     const controller = new AbortController();
     launchController.current = controller;

@@ -38,11 +38,13 @@ function App() {
   });
   const curveRequestId = useRef(0);
   const [loadAttempt, setLoadAttempt] = useState(0);
+  // The optional run workflow only signals completion; core pricing owns reloads.
   const handleRunComplete = useCallback(() => {
     setLoadAttempt((attempt) => attempt + 1);
   }, []);
 
   useEffect(() => {
+    // Abort the matrix request when a reload starts or the app unmounts.
     const controller = new AbortController();
 
     setMatrixState({ status: "loading" });
@@ -74,6 +76,7 @@ function App() {
     return () => controller.abort();
   }, [loadAttempt]);
 
+  // Preserve the requested terms and derive a separate row for displayed pricing.
   const exactMatrixRow =
     matrixState.status === "ready" && selectedTerms
       ? matrixState.rows.find((row) => matchesDealTerms(row, selectedTerms))
@@ -89,6 +92,7 @@ function App() {
     displayedMatrixRow !== undefined;
 
   useEffect(() => {
+    // A sequence ID protects against clients that do not honor AbortSignal.
     const requestId = ++curveRequestId.current;
 
     if (!displayedMatrixRow) {
@@ -104,6 +108,7 @@ function App() {
 
     void getPnlCurve(getDealTerms(displayedMatrixRow), controller.signal)
       .then((response) => {
+        // Only the newest request may commit curve data to the UI.
         if (
           controller.signal.aborted ||
           requestId !== curveRequestId.current
@@ -118,6 +123,7 @@ function App() {
         );
       })
       .catch((error: unknown) => {
+        // Ignore both cancelled requests and late responses from older selections.
         if (
           controller.signal.aborted ||
           requestId !== curveRequestId.current

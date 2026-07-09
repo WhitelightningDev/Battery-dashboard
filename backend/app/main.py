@@ -16,12 +16,14 @@ from pydantic import BaseModel
 #logging for the application 
 logger = logging.getLogger(__name__)
 DATA_FILE = Path(__file__).resolve().parents[1] / "take-home-data.json"
+# Runs are simulated with elapsed time so polling remains read-only.
 RUN_QUEUED_SECONDS = 1.0
 RUN_COMPLETE_SECONDS = 2.5
 
 RunStatus = Literal["queued", "running", "complete"]
 
 
+# The response model prevents the API from returning an unsupported run status.
 class RunResponse(BaseModel):
     id: str
     status: RunStatus
@@ -44,6 +46,7 @@ def load_dashboard_data(path: Path) -> dict[str, Any]:
 # This context manager loads the dashboard data when the application starts and handles any errors that may occur during loading.
 @asynccontextmanager
 async def lifespan(application: FastAPI) -> AsyncIterator[None]:
+    # Run state is intentionally process-local for this optional demo workflow.
     application.state.runs = {}
 
     try:
@@ -81,6 +84,7 @@ async def health_check() -> dict[str, str]:
 
 
 def get_run_status(created_at: float) -> RunStatus:
+    # Deriving status from time keeps GET /runs/{id} idempotent.
     elapsed = monotonic() - created_at
 
     if elapsed < RUN_QUEUED_SECONDS:
@@ -94,6 +98,7 @@ def get_run_status(created_at: float) -> RunStatus:
 @app.post("/runs", response_model=RunResponse, status_code=201, tags=["runs"])
 async def create_run(request: Request) -> RunResponse:
     run_id = str(uuid4())
+    # Only the start time is needed because status is derived when it is read.
     request.app.state.runs[run_id] = monotonic()
     return RunResponse(id=run_id, status="queued")
 
@@ -102,6 +107,7 @@ async def create_run(request: Request) -> RunResponse:
 async def get_run(run_id: str, request: Request) -> RunResponse:
     created_at = request.app.state.runs.get(run_id)
 
+    # Missing IDs are distinct from runs that have not completed yet.
     if created_at is None:
         raise HTTPException(status_code=404, detail="Run not found.")
 

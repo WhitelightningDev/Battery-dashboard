@@ -22,6 +22,7 @@ export function DealTermsSelector({
   selectedTerms,
   onChange,
 }: DealTermsSelectorProps) {
+  // Options are global by field so users can request combinations not in a row.
   const termOptions = uniqueNumbers(matrix.map((row) => row.term));
   const merchantOptions = uniqueNumbers(
     matrix.map((row) => row.merchantPct),

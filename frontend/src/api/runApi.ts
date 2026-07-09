@@ -1,6 +1,7 @@
 import type { RunResponse, RunStatus } from "../types";
 import { getApiBaseUrl } from "../utils";
 
+// Runtime validation mirrors the finite set enforced by the backend model.
 const RUN_STATUSES: ReadonlySet<string> = new Set([
   "queued",
   "running",
@@ -16,6 +17,7 @@ function isRunStatus(value: unknown): value is RunStatus {
 }
 
 function parseRunResponse(value: unknown): RunResponse {
+  // Never trust a successful HTTP response until its JSON shape is checked.
   if (
     !isObject(value) ||
     typeof value.id !== "string" ||
@@ -35,6 +37,7 @@ async function requestRun(
   path: string,
   init: RequestInit,
 ): Promise<RunResponse> {
+  // Run transport stays isolated from the pricing API and its domain errors.
   const baseUrl = getApiBaseUrl().replace(/\/+$/, "");
   let response: Response;
 

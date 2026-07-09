@@ -26,6 +26,7 @@ function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+// API payloads remain unknown until every required numeric field is validated.
 function parseRequiredNumber(value: unknown, field: string): number {
   const parsed = parseFiniteNumber(value);
 
@@ -53,6 +54,7 @@ function parseNonEmptyString(value: unknown, field: string): string {
 }
 
 function parsePricePerMwYr(value: unknown): number | null {
+  // A bad matrix price is preserved as invalid so the UI can explain it clearly.
   return parseFiniteNumber(value);
 }
 
@@ -120,6 +122,7 @@ async function fetchJson(
   path: string,
   signal?: AbortSignal,
 ): Promise<unknown> {
+  // Keep transport parsing separate from endpoint-specific response validation.
   const baseUrl = getApiBaseUrl().replace(/\/+$/, "");
   let response: Response;
 
@@ -208,6 +211,7 @@ export async function getPnlCurve(
     throw new Error("Invalid P&L curve response: expected an object.");
   }
 
+  // A missing points property is a valid empty-curve state, not invented data.
   const points = Array.isArray(payload.points) ? payload.points : [];
 
   return {

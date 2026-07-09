@@ -17,6 +17,7 @@ export function getDealTermsDistance(
   row: StrikeMatrixRow,
   requestedTerms: DealTerms,
 ): number {
+  // Profile dominates the score; cycling receives the required 10x weighting.
   return (
     Math.abs(row.term - requestedTerms.term) +
     Math.abs(row.merchantPct - requestedTerms.merchantPct) +
@@ -33,12 +34,14 @@ export function findNearestPricedRow(
   let nearestDistance = Number.POSITIVE_INFINITY;
 
   for (const row of rows) {
+    // Snapping may use only real finite prices from the supplied matrix.
     if (!isFiniteNumber(row.pricePerMwYr)) {
       continue;
     }
 
     const distance = getDealTermsDistance(row, requestedTerms);
 
+    // Strict comparison makes equal-distance ties keep the first matrix row.
     if (distance < nearestDistance) {
       nearestRow = row;
       nearestDistance = distance;
