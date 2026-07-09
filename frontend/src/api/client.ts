@@ -3,7 +3,7 @@ import { getApiBaseUrl } from "../utils";
 
 /** Fetch the backend health endpoint and fail clearly for non-success responses. */
 export async function getHealth(): Promise<HealthResponse> {
-  const response = await fetch(`${getApiBaseUrl()}/api/health`);
+  const response = await fetch(`${getApiBaseUrl()}/health`);
 
   if (!response.ok) {
     throw new Error(`API health check failed with status ${response.status}`);

@@ -85,6 +85,7 @@ app.add_middleware(
 
 # Define a health check endpoint that returns a simple status message indicating that the application is running.
 @app.get("/api/health", tags=["system"])
+@app.get("/health", include_in_schema=False)
 async def health_check() -> dict[str, str]:
     """Return a lightweight response used to confirm that the API is running."""
 
@@ -105,7 +106,13 @@ def get_run_status(created_at: float) -> RunStatus:
     return "complete"
 
 
-@app.post("/runs", response_model=RunResponse, status_code=201, tags=["runs"])
+@app.post("/api/runs", response_model=RunResponse, status_code=201, tags=["runs"])
+@app.post(
+    "/runs",
+    response_model=RunResponse,
+    status_code=201,
+    include_in_schema=False,
+)
 async def create_run(request: Request) -> RunResponse:
     """Create an in-memory run and return its initial queued state."""
 
@@ -115,7 +122,12 @@ async def create_run(request: Request) -> RunResponse:
     return RunResponse(id=run_id, status="queued")
 
 
-@app.get("/runs/{run_id}", response_model=RunResponse, tags=["runs"])
+@app.get("/api/runs/{run_id}", response_model=RunResponse, tags=["runs"])
+@app.get(
+    "/runs/{run_id}",
+    response_model=RunResponse,
+    include_in_schema=False,
+)
 async def get_run(run_id: str, request: Request) -> RunResponse:
     """Return the current status of an existing in-memory run."""
 
@@ -156,7 +168,8 @@ def format_key_number(value: Decimal) -> str:
     return format(value.normalize(), "f")
 
 # Define an endpoint to retrieve the strike matrix data from the dashboard data.
-@app.get("/strike-matrix", tags=["dashboard"])
+@app.get("/api/strike-matrix", tags=["dashboard"])
+@app.get("/strike-matrix", include_in_schema=False)
 async def get_strike_matrix(request: Request) -> list[Any]:
     """Return every deal-term and price row from the loaded strike matrix."""
 
@@ -164,7 +177,8 @@ async def get_strike_matrix(request: Request) -> list[Any]:
     return data["strikeMatrix"]
 
 # Define an endpoint to retrieve the P&L curve data based on the provided query parameters.
-@app.get("/pnl-curve", tags=["dashboard"])
+@app.get("/api/pnl-curve", tags=["dashboard"])
+@app.get("/pnl-curve", include_in_schema=False)
 async def get_pnl_curve(
     request: Request,
     term: Annotated[Decimal, Query()],

@@ -63,6 +63,9 @@ The default API origin is `http://localhost:8000`. Override it with
 VITE_API_BASE_URL=http://localhost:8000
 ```
 
+Production builds default to the same-origin `/api` service route. Do not set a
+deployed `VITE_API_BASE_URL` to `localhost`; either omit it or set it to `/api`.
+
 Build the production bundle with:
 
 ```bash
@@ -75,10 +78,10 @@ npm run build
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
 | `GET` | `/api/health` | Returns API health status. |
-| `POST` | `/runs` | Creates an in-memory run in the `queued` state. |
-| `GET` | `/runs/{id}` | Returns the current `queued`, `running`, or `complete` run state. |
-| `GET` | `/strike-matrix` | Returns available deal-term rows and `pricePerMwYr`. |
-| `GET` | `/pnl-curve?term={term}&merchantPct={pct}&cycling={cycling}&profile={profile}` | Returns `asOf`, `strikePerMwYr`, and P&L points for an exact priced cell. |
+| `POST` | `/api/runs` | Creates an in-memory run in the `queued` state. |
+| `GET` | `/api/runs/{id}` | Returns the current `queued`, `running`, or `complete` run state. |
+| `GET` | `/api/strike-matrix` | Returns available deal-term rows and `pricePerMwYr`. |
+| `GET` | `/api/pnl-curve?term={term}&merchantPct={pct}&cycling={cycling}&profile={profile}` | Returns `asOf`, `strikePerMwYr`, and P&L points for an exact priced cell. |
 
 `/pnl-curve` returns `404` when its exact lookup key is absent. The frontend
 distinguishes that missing-curve case from transport errors and valid responses
